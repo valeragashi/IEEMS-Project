@@ -79,7 +79,7 @@ class ExtractionOutput(BaseModel):
 class Finding(BaseModel):
     finding_id: str          # C-001, D-001, E-001 (prefix = source agent)
     agent: str
-    expense_id: str
+    expense_id: str          # the expense this is about, or "NONE" for card-only findings
     rule_id: str             # PER_DIEM_MEALS, EXACT_DUPLICATE, ...
     severity: str            # INFO | WARN | HIGH | BLOCK
     message: str
