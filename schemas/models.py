@@ -78,6 +78,7 @@ class ExtractionOutput(BaseModel):
 
 class Finding(BaseModel):
     finding_id: str          # C-001, D-001, E-001 (prefix = source agent)
+    agent: str
     expense_id: str
     rule_id: str             # PER_DIEM_MEALS, EXACT_DUPLICATE, ...
     severity: str            # INFO | WARN | HIGH | BLOCK
@@ -86,7 +87,6 @@ class Finding(BaseModel):
     suggested_action: str
 
 class FindingsOutput(BaseModel):
-    agent: str
     bundle_id: str
     findings: list[Finding] = []
 
