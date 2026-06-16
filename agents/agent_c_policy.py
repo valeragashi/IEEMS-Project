@@ -54,7 +54,10 @@ class PolicyValidationAgent:
             )
             return
 
-        if not self.policy.is_allowed_category(expense.category) and not self.policy.is_restricted_category(expense.category):
+        if (
+            not self.policy.is_allowed_category(expense.category)
+            and not self.policy.is_restricted_category(expense.category)
+        ):
             rule = self.policy.get_rule("blocked_category")
             self._add_finding(
                 expense_id=expense.expense_id,
@@ -67,7 +70,6 @@ class PolicyValidationAgent:
 
     def check_per_diem(self, normalized_expense) -> None:
         expense = normalized_expense.expense
-
         limit = self.policy.get_per_diem_limit(expense.country, expense.category)
 
         if limit is None:
@@ -81,9 +83,15 @@ class PolicyValidationAgent:
                 severity=rule["severity"],
                 message=(
                     f"{expense.category} expense exceeds per diem limit. "
-                    f"Amount: {normalized_expense.amount_base}, Limit: {limit}, Country: {expense.country}."
+                    f"Amount: {normalized_expense.amount_base}, "
+                    f"Limit: {limit}, Country: {expense.country}."
                 ),
-                evidence=[expense.source_file_id, "amount_base", "category", "country"],
+                evidence=[
+                    expense.source_file_id,
+                    "amount_base",
+                    "category",
+                    "country",
+                ],
                 suggested_action=rule["suggested_action"],
             )
 
@@ -93,13 +101,36 @@ class PolicyValidationAgent:
         if expense.category != "alcohol":
             return
 
+        blocked_countries = self.policy.get_alcohol_blocked_countries()
+
+        if expense.country in blocked_countries:
+            rule = self.policy.get_rule("alcohol_blocked_country")
+
+            self._add_finding(
+                expense_id=expense.expense_id,
+                rule_id="ALCOHOL_BLOCKED_COUNTRY",
+                severity=rule["severity"],
+                message=f"Alcohol expense is prohibited in {expense.country}.",
+                evidence=[
+                    expense.source_file_id,
+                    "country",
+                    "category",
+                ],
+                suggested_action=rule["suggested_action"],
+            )
+            return
+
         rule = self.policy.get_rule("alcohol_expense")
+
         self._add_finding(
             expense_id=expense.expense_id,
             rule_id="ALCOHOL_EXPENSE",
             severity=rule["severity"],
             message="Alcohol expense requires manager approval.",
-            evidence=[expense.source_file_id, "category"],
+            evidence=[
+                expense.source_file_id,
+                "category",
+            ],
             suggested_action=rule["suggested_action"],
         )
 
@@ -115,7 +146,8 @@ class PolicyValidationAgent:
                 severity=rule["severity"],
                 message=(
                     f"Extraction confidence is below threshold. "
-                    f"Confidence: {expense.overall_confidence}, Threshold: {threshold}."
+                    f"Confidence: {expense.overall_confidence}, "
+                    f"Threshold: {threshold}."
                 ),
                 evidence=[expense.source_file_id, "overall_confidence"],
                 suggested_action=rule["suggested_action"],
@@ -138,8 +170,15 @@ class PolicyValidationAgent:
                 expense_id=expense.expense_id,
                 rule_id="WEEKEND_MEAL",
                 severity=rule["severity"],
-                message="Meal expense submitted for a weekend date requires manager approval.",
-                evidence=[expense.source_file_id, "date_iso", "category"],
+                message=(
+                    "Meal expense submitted for a weekend date requires "
+                    "manager approval."
+                ),
+                evidence=[
+                    expense.source_file_id,
+                    "date_iso",
+                    "category",
+                ],
                 suggested_action=rule["suggested_action"],
             )
 
@@ -157,7 +196,10 @@ class PolicyValidationAgent:
                 rule_id="FAST_TRACK",
                 severity=rule["severity"],
                 message=f"Expense is below fast-track threshold of {limit}.",
-                evidence=[expense.source_file_id, "amount_base"],
+                evidence=[
+                    expense.source_file_id,
+                    "amount_base",
+                ],
                 suggested_action=rule["suggested_action"],
             )
 
@@ -177,7 +219,11 @@ class PolicyValidationAgent:
         )
 
 
-def run(bundle_path: str, run_dir: str, policy_path: str = "policy/expense_policy.yaml") -> int:
+def run(
+    bundle_path: str,
+    run_dir: str,
+    policy_path: str = "policy/expense_policy.yaml",
+) -> int:
     run_path = Path(run_dir)
 
     input_file = run_path / "normalization_results.json"
