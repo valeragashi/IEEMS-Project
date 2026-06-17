@@ -28,3 +28,11 @@ Thumbs.db
 
 #Input bundles
 input_bundles
+# Virtual Environment
+.venv/
+.env
+__pycache__/
+*.pyc
+
+# Local Executions Folder
+runs/
