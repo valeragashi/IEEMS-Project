@@ -1,0 +1,275 @@
+version: "1.0"
+
+policy_name: "IEEMS Internal Expense Policy"
+
+description: >
+  Configuration rules used by IEEMS agents for expense validation,
+  normalization, duplicate detection and final approval decisions.
+
+# ============================================================
+# Currency
+# ============================================================
+
+currency:
+  base_currency: "EUR"
+
+  exchange_rates:
+    EUR: "1.00"
+    USD: "0.92"
+    GBP: "1.17"
+    CHF: "1.05"
+    TRY: "0.028"
+
+# ============================================================
+# Per Diem Limits
+# ============================================================
+
+per_diem:
+
+  DEFAULT:
+    meals: "50.00"
+    lodging: "150.00"
+    transport: "40.00"
+
+  DE:
+    meals: "70.00"
+    lodging: "180.00"
+    transport: "50.00"
+
+  FR:
+    meals: "75.00"
+    lodging: "190.00"
+    transport: "50.00"
+
+  IT:
+    meals: "65.00"
+    lodging: "170.00"
+    transport: "45.00"
+
+  TR:
+    meals: "45.00"
+    lodging: "120.00"
+    transport: "35.00"
+
+  XK:
+    meals: "35.00"
+    lodging: "100.00"
+    transport: "25.00"
+
+  AL:
+    meals: "40.00"
+    lodging: "110.00"
+    transport: "30.00"
+
+# ============================================================
+# Expense Categories
+# ============================================================
+
+categories:
+
+  allowed:
+    - lodging
+    - meals
+    - transport
+    - airfare
+    - office
+    - other
+
+  restricted:
+    - alcohol
+
+  blocked:
+    - gambling
+    - personal_items
+    - luxury_goods
+
+# ============================================================
+# Receipt Rules
+# ============================================================
+
+receipts:
+
+  required_above: "50.00"
+
+  allow_missing_under: true
+
+  missing_receipt:
+    severity: "HIGH"
+    suggested_action: "MANUAL_REVIEW"
+
+# ============================================================
+# Approval Rules
+# ============================================================
+
+approval:
+
+  auto_approve_below: "25.00"
+
+  manager_approval_above: "500.00"
+
+  finance_review_above: "2000.00"
+
+  approvers:
+
+    system: "SYSTEM"
+
+    manager: "LINE_MANAGER"
+
+    finance: "FINANCE_REVIEW"
+
+# ============================================================
+# Confidence Rules
+# ============================================================
+
+confidence:
+
+  manual_review_below: 0.80
+
+# ============================================================
+# Business Policy Rules
+# ============================================================
+
+policy_rules:
+
+  per_diem_exceeded:
+    severity: "HIGH"
+    suggested_action: "MANAGER_APPROVAL"
+
+  blocked_category:
+    severity: "BLOCK"
+    suggested_action: "REJECT"
+
+  alcohol_expense:
+    severity: "HIGH"
+    suggested_action: "MANAGER_APPROVAL"
+
+  alcohol_blocked_country:
+    severity: "BLOCK"
+    suggested_action: "REJECT"
+
+    blocked_countries:
+      - SA
+      - AE
+
+  low_confidence_extraction:
+    severity: "WARN"
+    suggested_action: "MANUAL_REVIEW"
+
+  unreadable_receipt:
+    severity: "HIGH"
+    suggested_action: "MANUAL_REVIEW"
+
+  unknown_currency:
+    severity: "BLOCK"
+    suggested_action: "REJECT"
+
+  invalid_date:
+    severity: "HIGH"
+    suggested_action: "MANUAL_REVIEW"
+
+  total_mismatch:
+    severity: "WARN"
+    suggested_action: "MANUAL_REVIEW"
+
+# ============================================================
+# Weekend Rules
+# ============================================================
+
+weekend:
+
+  meals_require_approval: true
+
+  weekend_meal:
+    severity: "HIGH"
+    suggested_action: "MANAGER_APPROVAL"
+
+# ============================================================
+# VAT
+# ============================================================
+
+vat:
+
+  enabled: true
+
+  eligible_countries:
+    - DE
+    - FR
+    - IT
+    - ES
+    - NL
+    - XK
+    - AL
+
+  vat_reclaim:
+    severity: "INFO"
+    suggested_action: "NONE"
+
+# ============================================================
+# Duplicate Detection
+# ============================================================
+
+duplicate_detection:
+
+  exact_hash_match: true
+
+  vendor_similarity_min: 90
+
+  amount_tolerance_percent: "2.00"
+
+  date_window_days: 1
+
+  exact_duplicate:
+    severity: "BLOCK"
+    suggested_action: "REJECT"
+
+  strong_duplicate:
+    severity: "BLOCK"
+    suggested_action: "REJECT"
+
+  fuzzy_duplicate:
+    severity: "HIGH"
+    suggested_action: "MANUAL_REVIEW"
+
+# ============================================================
+# Fast Track
+# ============================================================
+
+fast_track:
+
+  enabled: true
+
+  below: "25.00"
+
+  fast_track_finding:
+    severity: "INFO"
+    suggested_action: "NONE"
+
+# ============================================================
+# Final Decision Rules
+# ============================================================
+
+decision_rules:
+
+  block_if_any_severity: "BLOCK"
+
+  manager_approval_if_any_severity: "HIGH"
+
+  manual_review_if_needs_manual_review: true
+
+  otherwise: "AUTO_APPROVE"
+
+# ============================================================
+# Outputs
+# ============================================================
+
+output:
+
+  create_final_decision: true
+
+  create_approval_packet: true
+
+  create_posting_payload: true
+
+  create_audit_log: true
+
+  create_metrics: true

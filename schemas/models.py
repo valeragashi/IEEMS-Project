@@ -12,7 +12,7 @@ Conventions:
 Pipeline order (follows the data, not the alphabet):
     A -> B -> D -> C -> E -> H
   A intake | B extract | D normalize | C policy | E duplicates | H decide
-Agent D wraps each extracted expense with clean USD/date values, and Agents C
+Agent D wraps each extracted expense with clean currency/date values, and Agents C
 and E read the NORMALIZED expenses, not the raw ones.
 
 Reference string values (validated by the agents, kept as plain str):
@@ -87,6 +87,7 @@ class Finding(BaseModel):
     suggested_action: str
 
 class FindingsOutput(BaseModel):
+    agent: str
     bundle_id: str
     findings: list[Finding] = []
 
@@ -96,7 +97,7 @@ class FindingsOutput(BaseModel):
 
 class NormalizedExpense(BaseModel):
     expense: ExtractedExpense    # the original, unchanged
-    amount_usd: Decimal          # total converted at the fixed FX rate
+    amount_base: Decimal          # total converted at the fixed FX rate
     date_iso: str                # standardized "YYYY-MM-DD"
     vat_eligible: bool = False   # VAT reclaim tag
 
@@ -114,7 +115,7 @@ class ExpenseDecision(BaseModel):
     decision: str                                # the verdict
     approver: str                                # routing for the approval packet | Use standardized values "SYSTEM", "LINE_MANAGER", "FINANCE_REVIEW"
     reasons: list[str] = []                      # finding_ids behind the decision
-    reimbursable_amount_usd: Decimal = Decimal("0.00")
+    reimbursable_amount_base: Decimal = Decimal("0.00")
 
 
 class FinalDecision(BaseModel):
