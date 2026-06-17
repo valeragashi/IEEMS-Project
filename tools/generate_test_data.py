@@ -54,7 +54,10 @@ def s01_clean():
 
     _manifest(f, bundle_id="s01_clean", employee_id="EMP-0001", employee_name="Jane Doe",
               cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Client visit Berlin",
-              expected={"decisions": {"E001" : "AUTO_APPROVE", "E002": "AUTO_APPROVE"},
+              expected={"decisions": [
+                          {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                          {"expense_id": "E002", "decision": "AUTO_APPROVE"},
+                        ],
                         "must_contain_rule_ids": [],
                         "reimbursable": {"E001": "0.00", "E002": "0.00"}})
 
@@ -80,7 +83,9 @@ def s02_over_per_diem():
     
     _manifest(f, bundle_id="s02_over_per_diem", employee_id="EMP-0002", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Client dinner Berlin",
-        expected={"decisions": {"E001": "MANAGER_APPROVAL"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "MANAGER_APPROVAL"},
+                  ],
                   "must_contain_rule_ids": ["PER_DIEM_MEALS"]})
 
     
@@ -115,7 +120,11 @@ def s03_duplicate():
     (f / "receipts" / "r3_dinner_copy.pdf").write_bytes(r2.read_bytes())
     _manifest(f, bundle_id="s03_duplicate", employee_id="EMP-0003", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Client visit Rome",
-        expected={"decisions": {"E001": "AUTO_APPROVE", "E002": "AUTO_APPROVE", "E003": "BLOCK"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                    {"expense_id": "E002", "decision": "AUTO_APPROVE"},
+                    {"expense_id": "E003", "decision": "BLOCK"},
+                  ],
                   "must_contain_rule_ids": ["EXACT_DUPLICATE"],
                   "reimbursable": {"E001": "38.00", "E002": "48.00", "E003": "0.00"}})
 
@@ -135,7 +144,9 @@ def s04_alcohol_block():
     )
     _manifest(f, bundle_id="s04_alcohol_block", employee_id="EMP-0004", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Conference Riyadh",
-        expected={"decisions": {"E001": "BLOCK"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "BLOCK"},
+                  ],
                   "must_contain_rule_ids": ["ALCOHOL_BLOCKED_COUNTRY"],
                   "reimbursable": {"E001": "0.00"}})
 
@@ -153,7 +164,9 @@ def s05_missing_receipt():
     )
     _manifest(f, bundle_id="s05_missing_receipt", employee_id="EMP-0005", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-11", trip_purpose="Client visit Berlin",
-        expected={"decisions": {"E001": "AUTO_APPROVE"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                  ],
                   "must_contain_rule_ids": ["MISSING_RECEIPT"],
                   "reimbursable": {"E001": "32.00"}})
 # s06 VAT-eligible receipt — auto-tag for tax team reclaim processing.
@@ -176,7 +189,9 @@ def s06_vat():
     )
     _manifest(f, bundle_id="s06_vat", employee_id="EMP-0006", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Conference Munich",
-        expected={"decisions": {"E001": "AUTO_APPROVE"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                  ],
                   "must_contain_rule_ids": ["VAT_RECLAIM_ELIGIBLE"],
                   "reimbursable": {"E001": "0.00"}})
 # s07 Multi-currency trip requiring FX normalization and conversion.
@@ -223,7 +238,11 @@ def s07_multi_currency():
 
     _manifest(f, bundle_id="s07_multi_currency", employee_id="EMP-0007", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Multi-city office tour",
-        expected={"decisions": {"E001": "AUTO_APPROVE", "E002": "AUTO_APPROVE", "E003": "AUTO_APPROVE"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                    {"expense_id": "E002", "decision": "AUTO_APPROVE"},
+                    {"expense_id": "E003", "decision": "AUTO_APPROVE"},
+                  ],
                   "must_contain_rule_ids": [],
                   "reimbursable": {"E001": "0.00", "E002": "0.00", "E003": "0.00"}})
     
@@ -247,7 +266,9 @@ def s08_low_confidence():
     
     _manifest(f, bundle_id="s08_low_confidence", employee_id="EMP-0008", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Client visit Paris",
-        expected={"decisions": {"E001": "MANUAL_REVIEW"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "MANUAL_REVIEW"},
+                  ],
                   "must_contain_rule_ids": []})
 # s09 Clean small expense under threshold — minimal noise, fast-track approval.
 def s09_fast_track():
@@ -266,7 +287,9 @@ def s09_fast_track():
     
     _manifest(f, bundle_id="s09_fast_track", employee_id="EMP-0009", employee_name="Jane Doe",
         cost_center="CC-1100", submission_date="2026-06-10", trip_purpose="Local travel Berlin",
-        expected={"decisions": {"E001": "AUTO_APPROVE"},
+        expected={"decisions": [
+                    {"expense_id": "E001", "decision": "AUTO_APPROVE"},
+                  ],
                   "must_contain_rule_ids": ["FAST_TRACK"],
                   "reimbursable": {"E001": "12.00"}})
 

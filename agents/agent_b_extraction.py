@@ -105,3 +105,10 @@ def run_extraction(context, bundle_dir, confidence_threshold: float = 0.80) -> E
             skipped.append(f"{entry.filename}: {e}")
 
     return ExtractionOutput(bundle_id=context.bundle_id, expenses=expenses, skipped_files=skipped)
+
+#TODO: Enable after sprint 1 merge, needs utils.json_utils + constants
+# def run(bundle_path, run_dir, policy):
+#     ctx = ContextPacket(**read_json(run_dir / "context_packet.json"))
+#     out = run_extraction(ctx, bundle_dir=bundle_path)
+#     write_json(run_dir / "extracted_expenses.json", out.model_dump(mode="json"))
+#     return 0
