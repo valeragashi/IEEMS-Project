@@ -18,9 +18,10 @@ def make_receipt_pdf(
         vendor_address: str = "",           # street line; country gets appended to it
         receipt_no: str = "",               # printed top-right of the date row, e.g. "0042"
         font: str = "Helvetica",            # s08 passes an odd font to drop extraction confidence
+        obscure_total: bool = False,        # s08 passes True to obscure total to reduce confidence
         ) -> None:
 
-    bold = font + "-Bold"
+    bold = font if font.endswith(("-Bold","-Oblique","-Italic","-BoldOblique","-BoldItalic")) else font + "-Bold"
     W = 80 * mm                             # thermal-roll width
     M = 5                                  # side margin
     inner_l = M                             # left text edge
@@ -82,7 +83,12 @@ def make_receipt_pdf(
     y -= 14
     c.setFont(bold, 10)
     c.drawString(inner_l, y, "TOTAL")
-    c.drawRightString(inner_r, y, f"{currency} {total:.2f}")
+    amount = f"{total:.2f}"
+    if obscure_total:
+        amount = amount[:1] + "#" + amount[2:]          # 44.00 -> 4#.00 in the text layer too
+    c.drawRightString(inner_r, y, f"{currency} {amount}")
+    if obscure_total:
+        c.setFillGray(0.45); c.rect(inner_r - 26, y - 3, 15, 13, fill=1, stroke=0); c.setFillGray(0)
     y -= h_pay
 
     # payment + footer
