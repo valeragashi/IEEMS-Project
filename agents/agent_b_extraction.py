@@ -3,9 +3,12 @@ from pydantic import BaseModel, Field
 from openai import OpenAI
 from decimal import Decimal, InvalidOperation
 
-from schemas.models import ExtractedExpense, ExtractionOutput, LineItem
+from schemas.models import ExtractedExpense, ExtractionOutput, LineItem, ContextPacket
 from services.pdf_service import extract_text
 from services.openai_service import extract_structured
+
+from utils.json_utils import read_json, write_json, model_to_dict
+from utils.constants import FILENAME_CONTEXT_PACKET, FILENAME_EXTRACTED_EXPENSES
 
 from pathlib import Path
 
@@ -106,9 +109,8 @@ def run_extraction(context, bundle_dir, confidence_threshold: float = 0.80) -> E
 
     return ExtractionOutput(bundle_id=context.bundle_id, expenses=expenses, skipped_files=skipped)
 
-#TODO: Enable after sprint 1 merge, needs utils.json_utils + constants
-# def run(bundle_path, run_dir, policy):
-#     ctx = ContextPacket(**read_json(run_dir / "context_packet.json"))
-#     out = run_extraction(ctx, bundle_dir=bundle_path)
-#     write_json(run_dir / "extracted_expenses.json", out.model_dump(mode="json"))
-#     return 0
+def run(bundle_path, run_dir, policy):
+    ctx = ContextPacket(**read_json(run_dir / FILENAME_CONTEXT_PACKET))
+    out = run_extraction(ctx, bundle_dir=bundle_path)
+    write_json(model_to_dict(out), run_dir / FILENAME_EXTRACTED_EXPENSES)   # data first, path second
+    return 0

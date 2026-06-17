@@ -256,9 +256,9 @@ def validate_expense_decision_fields(
     expense_id: str,
     decision: str,
     approver: str,
-    reimbursable_amount_usd: Any,
+    reimbursable_amount_base: Any,
 ) -> Decimal:
-    """Validate and return the ``reimbursable_amount_usd`` as a ``Decimal``.
+    """Validate and return the ``reimbursable_amount_base`` as a ``Decimal``.
 
     Raises ``ValueError`` / ``TypeError`` on the first failure.
     """
@@ -268,6 +268,6 @@ def validate_expense_decision_fields(
     validate_decision(decision)
     validate_approver(approver)
 
-    amount = validate_decimal_string(reimbursable_amount_usd, "reimbursable_amount_usd")
-    validate_non_negative(amount, "reimbursable_amount_usd")
+    amount = validate_decimal_string(reimbursable_amount_base, "reimbursable_amount_base")
+    validate_non_negative(amount, "reimbursable_amount_base")
     return amount
