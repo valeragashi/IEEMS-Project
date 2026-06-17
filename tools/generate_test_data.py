@@ -67,7 +67,11 @@ def s02_over_per_diem():
         vendor="Restaurant Vau",
         date="2026-06-10",
         currency="EUR",
-        items=[{"description": "Dinner for two", "quantity": 1, "unit_price": "95.00"}],
+        items=[
+            {"description": "Starter",        "quantity": 1, "unit_price": "22.00"},
+            {"description": "Main course",    "quantity": 1, "unit_price": "48.00"},
+            {"description": "Glass of wine",  "quantity": 1, "unit_price": "25.00"},
+        ],
         country="DE",
         payment="personal",
         vendor_address="Jaegerstrasse 54, Berlin",
@@ -265,8 +269,8 @@ def s09_fast_track():
         expected={"decisions": {"E001": "AUTO_APPROVE"},
                   "must_contain_rule_ids": ["FAST_TRACK"],
                   "reimbursable": {"E001": "12.00"}})
-    
-if __name__ == "__main__":
+
+def generate_receipts():
     s01_clean()
     s02_over_per_diem()
     s03_duplicate()
@@ -276,3 +280,6 @@ if __name__ == "__main__":
     s07_multi_currency()
     s08_low_confidence()
     s09_fast_track()
+
+if __name__ == "__main__":
+    generate_receipts()
