@@ -166,10 +166,8 @@ class OrchestratorAgent:
 
             if decision.decision == "AUTO_APPROVE":
                 totals["approved_base"] += decision.reimbursable_amount_base
-                totals["approved_base"] += decision.reimbursable_amount_base
 
             elif decision.decision == "BLOCK":
-                totals["blocked_base"] += amount
                 totals["blocked_base"] += amount
 
             else:
