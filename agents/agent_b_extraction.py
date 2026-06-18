@@ -96,7 +96,7 @@ def run_extraction(context, bundle_dir, confidence_threshold: float = 0.80) -> E
     expenses, skipped = [], []
     for i, entry in enumerate(receipts, start=1):
         expense_id = f"E{i:03d}"
-        path = bundle_dir / entry.filename
+        path = bundle_dir / "receipts" / entry.filename
         try:
             text = extract_text(str(path))
             if not text:
