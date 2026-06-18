@@ -66,7 +66,7 @@ def map_to_expense(llm, expense_id, source_file_id, confidence_threshold=0.80):
                 unit_price=unit,
                 line_total= line))
         
-    needs_review = (llm.overall_confidence < confidence_threshold) or bad_parse
+    needs_review = (llm.overall_confidence <= confidence_threshold) or bad_parse
 
     return ExtractedExpense(
         expense_id=expense_id,
@@ -96,7 +96,7 @@ def run_extraction(context, bundle_dir, confidence_threshold: float = 0.80) -> E
     expenses, skipped = [], []
     for i, entry in enumerate(receipts, start=1):
         expense_id = f"E{i:03d}"
-        path = bundle_dir / entry.filename
+        path = bundle_dir / "receipts" / entry.filename
         try:
             text = extract_text(str(path))
             if not text:

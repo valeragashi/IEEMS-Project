@@ -107,7 +107,7 @@ ALLOWED_APPROVERS: frozenset[str] = frozenset({
 FILE_TYPE_RECEIPT_PDF  = "receipt_pdf"
 FILE_TYPE_CARD_EXPORT  = "card_export"
 FILE_TYPE_POLICY       = "policy"
-
+FILENAME_CARD_EXPORT = "card_export.csv"
 # ---------------------------------------------------------------------------
 # Pipeline output filenames (agents write; downstream agents read)
 # ---------------------------------------------------------------------------
