@@ -49,6 +49,7 @@ class ExpectedDecision:
     expense_id: str
     decision:   str
     approver:   str | None = None          # optional — omit to skip approver check
+    reimbursable: Decimal | None = None      # NEW
 
 
 @dataclass
@@ -62,7 +63,7 @@ class BundleExpectation:
     bundle_id:  str
     decisions:  list[ExpectedDecision] = field(default_factory=list)
     totals:     ExpectedTotals         = field(default_factory=ExpectedTotals)
-
+    must_contain_rule_ids: list[str]   = field(default_factory=list)
 
 @dataclass
 class CheckResult:
@@ -93,12 +94,14 @@ def load_manifest(bundle_path: Path) -> dict:
 def parse_expectations(manifest: dict, bundle_id: str) -> BundleExpectation:
     """Extract the `expected` block from the manifest into typed objects."""
     raw = manifest.get("expected", {})
+    reimb = raw.get("reimbursable", {})
 
     decisions = [
         ExpectedDecision(
             expense_id=d["expense_id"],
             decision=d["decision"],
             approver=d.get("approver"),
+            reimbursable=Decimal(str(reimb[d["expense_id"]])) if d["expense_id"] in reimb else None,
         )
         for d in raw.get("decisions", [])
     ]
@@ -109,7 +112,10 @@ def parse_expectations(manifest: dict, bundle_id: str) -> BundleExpectation:
         blocked_base =Decimal(str(raw_totals["blocked_base"]))  if "blocked_base"  in raw_totals else None,
     )
 
-    return BundleExpectation(bundle_id=bundle_id, decisions=decisions, totals=totals)
+    return BundleExpectation(
+        bundle_id=bundle_id, decisions=decisions, totals=totals,
+        must_contain_rule_ids=raw.get("must_contain_rule_ids", []),  
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -199,11 +205,35 @@ def check_bundle(
                 f"approver: expected '{exp.approver}' got '{act.get('approver')}'"
             )
 
+        if exp.reimbursable is not None:
+            actual_reimb = Decimal(str(act.get("reimbursable_amount_base", "0")))
+            if actual_reimb != exp.reimbursable:
+                failures.append(f"reimbursable: expected {exp.reimbursable} got {actual_reimb}")
+
         results.append(CheckResult(
             expense_id=exp.expense_id,
             passed=not failures,
             detail="; ".join(failures) if failures else "OK",
         ))
+
+    if expectation.must_contain_rule_ids:
+      run_dir = decision_path.parent
+      found = set()
+      for fname in ("policy_results.json", "duplicates.json", "normalization_results.json"):
+          fp = run_dir / fname
+          if fp.exists():
+              found |= {f.get("rule_id") for f in read_json(fp).get("findings", [])}
+      for rid in expectation.must_contain_rule_ids:
+          ok = rid in found
+          results.append(CheckResult(f"RULE.{rid}", ok,
+              "OK" if ok else f"required rule_id '{rid}' not in findings"))
+          
+    run_dir = decision_path.parent                 
+    for art in ("extracted_expenses.json", "policy_results.json", "duplicates.md",
+                "exceptions.md", "approval_packet.json", "posting_payload.json",
+                "audit_log.md", "metrics.json", "final_decision.json"):
+        ok = (run_dir / art).exists()
+        results.append(CheckResult(f"FILE.{art}", ok, "OK" if ok else f"missing {art}"))
 
     raw_totals = raw.get("totals", {})
 
@@ -390,16 +420,13 @@ def determinism_check(bundle_path: Path, policy: dict) -> bool:
             run_dirs.append(tmp)
             print(f"  Run {run_num}: {tmp}")
 
-            # Seed a minimal normalization_results.json so Agent C can run
-            # even when Agent D is not yet implemented.  Agent D overwrites
-            # this file when present; it stays as-is (empty) otherwise.
             (tmp / "normalization_results.json").write_text(
                 json.dumps({"bundle_id": bundle_id, "normalized": [], "findings": []}, indent=2),
                 encoding="utf-8",
             )
 
             try:
-                pipeline_driver.run_pipeline(bundle_path, tmp, str(POLICY_FILE), bundle_id)
+                pipeline_driver.run_pipeline(bundle_path, tmp, policy, bundle_id)
             except SystemExit as exc:
                 print(f"  {RED}Run {run_num} aborted (exit {exc.code}).{RESET}")
                 return False
@@ -510,20 +537,20 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    policy  = load_policy()
+    bundles = discover_bundles(args.bundle)
+
     if args.determinism:
-        policy  = load_policy()
-        bundles = discover_bundles(args.bundle)
         print(f"\n{BOLD}IEEMS Determinism Check{RESET}  ({len(bundles)} bundle(s))")
         ok = all(determinism_check(b, policy) for b in bundles)
         sys.exit(0 if ok else 1)
-
-    policy  = load_policy()
-    bundles = discover_bundles(args.bundle)
 
     print(f"\n{BOLD}IEEMS Test Harness{RESET}  ({len(bundles)} bundle(s))")
     if USE_FIXTURES:
         print(f"  {YELLOW}[FIXTURE MODE — pipeline not invoked]{RESET}")
     print()
+
+    Path("state/submission_history.json").unlink(missing_ok=True)
 
     results: list[BundleResult] = []
 

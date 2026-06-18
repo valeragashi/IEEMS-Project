@@ -220,4 +220,18 @@ def run(
     with open(output_file, "w", encoding="utf-8") as file:
         file.write(result.model_dump_json(indent=2))
 
+    md_lines = [f"# Duplicate Findings — {result.bundle_id}", ""]
+    if not result.findings:
+        md_lines.append("No duplicates detected.")
+    else:
+        for f in result.findings:
+            md_lines += [
+                f"## {f.finding_id} — {f.rule_id} ({f.severity})",
+                f"- Expense: {f.expense_id}",
+                f"- {f.message}",
+                f"- Evidence: {', '.join(f.evidence)}",
+                "",
+            ]
+    (run_path / "duplicates.md").write_text("\n".join(md_lines), encoding="utf-8")
+
     return 0
