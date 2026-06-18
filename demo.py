@@ -49,8 +49,8 @@ class ExpectedDecision:
 
 @dataclass
 class ExpectedTotals:
-    approved_usd: Decimal | None = None
-    blocked_usd:  Decimal | None = None
+    approved_base: Decimal | None = None
+    blocked_base:  Decimal | None = None
 
 
 @dataclass
@@ -101,8 +101,8 @@ def parse_expectations(manifest: dict, bundle_id: str) -> BundleExpectation:
 
     raw_totals = raw.get("totals", {})
     totals = ExpectedTotals(
-        approved_usd=Decimal(str(raw_totals["approved_usd"])) if "approved_usd" in raw_totals else None,
-        blocked_usd =Decimal(str(raw_totals["blocked_usd"]))  if "blocked_usd"  in raw_totals else None,
+        approved_base=Decimal(str(raw_totals["approved_base"])) if "approved_base" in raw_totals else None,
+        blocked_base =Decimal(str(raw_totals["blocked_base"]))  if "blocked_base"  in raw_totals else None,
     )
 
     return BundleExpectation(bundle_id=bundle_id, decisions=decisions, totals=totals)
@@ -203,26 +203,26 @@ def check_bundle(
 
     raw_totals = raw.get("totals", {})
 
-    if expectation.totals.approved_usd is not None:
-        actual_approved = Decimal(str(raw_totals.get("approved_usd", "0")))
-        ok = actual_approved == expectation.totals.approved_usd
+    if expectation.totals.approved_base is not None:
+        actual_approved = Decimal(str(raw_totals.get("approved_base", "0")))
+        ok = actual_approved == expectation.totals.approved_base
         results.append(CheckResult(
-            expense_id="TOTALS.approved_usd",
+            expense_id="TOTALS.approved_base",
             passed=ok,
             detail="OK" if ok else (
-                f"approved_usd: expected {expectation.totals.approved_usd} "
+                f"approved_base: expected {expectation.totals.approved_base} "
                 f"got {actual_approved}"
             ),
         ))
 
-    if expectation.totals.blocked_usd is not None:
-        actual_blocked = Decimal(str(raw_totals.get("blocked_usd", "0")))
-        ok = actual_blocked == expectation.totals.blocked_usd
+    if expectation.totals.blocked_base is not None:
+        actual_blocked = Decimal(str(raw_totals.get("blocked_base", "0")))
+        ok = actual_blocked == expectation.totals.blocked_base
         results.append(CheckResult(
-            expense_id="TOTALS.blocked_usd",
+            expense_id="TOTALS.blocked_base",
             passed=ok,
             detail="OK" if ok else (
-                f"blocked_usd: expected {expectation.totals.blocked_usd} "
+                f"blocked_base: expected {expectation.totals.blocked_base} "
                 f"got {actual_blocked}"
             ),
         ))

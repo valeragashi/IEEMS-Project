@@ -98,6 +98,15 @@ class DuplicateDetectionAgent:
                 first_expense = first.expense
                 second_expense = second.expense
 
+                exact_duplicate_exists = any(
+                    finding.rule_id == "EXACT_DUPLICATE"
+                    and finding.expense_id == second_expense.expense_id
+                    for finding in self.findings
+                )
+
+                if exact_duplicate_exists:
+                    continue
+
                 if self.duplicate_service.is_strong_duplicate(
                     first_expense,
                     second_expense,
