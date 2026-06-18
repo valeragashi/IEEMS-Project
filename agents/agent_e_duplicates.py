@@ -173,7 +173,7 @@ class DuplicateDetectionAgent:
 def run(
     bundle_path: str,
     run_dir: str,
-    policy_path: str = "policy/expense_policy.yaml",
+    policy = None,
 ) -> int:
     run_path = Path(run_dir)
 
@@ -202,7 +202,7 @@ def run(
     )
     context_packet = ContextPacket.model_validate(context_data)
 
-    policy_service = PolicyService(policy_path)
+    policy_service = PolicyService()
     duplicate_service = DuplicateService(
         policy_service.get_duplicate_settings()
     )

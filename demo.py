@@ -158,7 +158,7 @@ def run_pipeline_for_bundle(
 
     run_dir = pipeline_driver.create_run_dir(bundle_id)
     log_step(log, "RUN_DIR", str(run_dir))
-    pipeline_driver.run_pipeline(bundle_path, run_dir, str(POLICY_FILE), bundle_id)
+    pipeline_driver.run_pipeline(bundle_path, run_dir, policy, bundle_id)
     return run_dir / FILENAME_FINAL_DECISION
 
 

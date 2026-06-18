@@ -222,7 +222,7 @@ class PolicyValidationAgent:
 def run(
     bundle_path: str,
     run_dir: str,
-    policy_path: str = "policy/expense_policy.yaml",
+    policy=None,
 ) -> int:
     run_path = Path(run_dir)
 
@@ -237,7 +237,7 @@ def run(
 
     normalization_output = NormalizationOutput.model_validate(data)
 
-    policy_service = PolicyService(policy_path)
+    policy_service = PolicyService()
     agent = PolicyValidationAgent(policy_service)
 
     result = agent.validate(normalization_output)

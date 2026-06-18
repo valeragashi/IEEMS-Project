@@ -27,7 +27,7 @@ def s01_clean():
         vendor = "Hotel Adlon Berlin",
         date = "2026-06-10",
         currency="EUR",
-        items=[{"description": "Room (per night)", "quantity": 2, "unit_price": "160.00"}],
+        items=[{"description": "Room (per night)", "quantity": 1, "unit_price": "160.00"}],
         country="DE",
         payment="corporate_card",
         vendor_address="Unter den Linden 77, Berlin",
@@ -48,7 +48,7 @@ def s01_clean():
     
     (f / "card_export.csv").write_text(
         "date,vendor,amount,currency\n"
-        "2026-06-10,Hotel Adlon Berlin,320.00,EUR\n"
+        "2026-06-10,Hotel Adlon Berlin,160.00,EUR\n"
         "2026-06-09,Lufthansa,420.00,USD\n"
     )
 
@@ -202,7 +202,7 @@ def s07_multi_currency():
         vendor="Cafe Central", 
         date="2026-06-08", 
         currency="EUR",
-        items=[{"description": "Working lunch", "quantity": 1, "unit_price": "120.00"}],
+        items=[{"description": "Working lunch", "quantity": 1, "unit_price": "48.00"}],
         country="AT", 
         payment="corporate_card",
         vendor_address="Herrengasse 14, Vienna", 
@@ -213,7 +213,7 @@ def s07_multi_currency():
         vendor="The Ledbury", 
         date="2026-06-09", 
         currency="GBP",
-        items=[{"description": "Client dinner", "quantity": 1, "unit_price": "200.00"}],
+        items=[{"description": "Client dinner", "quantity": 1, "unit_price": "40.00"}],
         country="GB", 
         payment="corporate_card",
         vendor_address="127 Ledbury Rd, London", 
@@ -231,8 +231,8 @@ def s07_multi_currency():
     
     (f / "card_export.csv").write_text(
         "date,vendor,amount,currency\n"
-        "2026-06-08,Cafe Central,120.00,EUR\n"
-        "2026-06-09,The Ledbury,200.00,GBP\n"
+        "2026-06-08,Cafe Central,48.00,EUR\n"
+        "2026-06-09,The Ledbury,40.00,GBP\n"
         "2026-06-10,WeWork NYC,300.00,USD\n"
     )
 
