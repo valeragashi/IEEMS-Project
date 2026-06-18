@@ -66,7 +66,7 @@ def map_to_expense(llm, expense_id, source_file_id, confidence_threshold=0.80):
                 unit_price=unit,
                 line_total= line))
         
-    needs_review = (llm.overall_confidence < confidence_threshold) or bad_parse
+    needs_review = (llm.overall_confidence <= confidence_threshold) or bad_parse
 
     return ExtractedExpense(
         expense_id=expense_id,
