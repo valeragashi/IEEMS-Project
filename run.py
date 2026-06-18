@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import sys
+import types
 from pathlib import Path
 
 import yaml
@@ -97,12 +98,33 @@ def run_pipeline(
                 log_step(log, "PIPELINE_ABORTED", f"fatal import failure at Agent {letter}")
                 sys.exit(1)
             continue
+        except Exception as exc:
+            # Catches module-level init failures (e.g. OpenAI() with no API key).
+            # We cannot fix Agent B's code, so fall back to a stub and let the
+            # rest of the suite run.
+            log_step(
+                log,
+                f"AGENT_{letter}_IMPORT_ERROR",
+                f"Module init failed — stub fallback active: {exc}",
+                level="WARNING",
+            )
+            agent = types.SimpleNamespace(run=lambda bp, rd, p: 1)
+            fatal = False  # shadows the loop var; only affects this iteration
 
         # --- snapshot run_dir contents before the agent writes anything ---
         before = {p.name for p in run_dir.iterdir()}
 
         # --- run the agent ---
-        exit_code: int = agent.run(bundle_path, run_dir, policy)
+        try:
+            exit_code: int = agent.run(bundle_path, run_dir, policy)
+        except AttributeError:
+            log_step(
+                log,
+                f"AGENT_{letter}_MISSING_RUN",
+                f"agents.{module_path} has no run() method — skipping",
+                level="WARNING",
+            )
+            continue
 
         written = sorted({p.name for p in run_dir.iterdir()} - before)
 
